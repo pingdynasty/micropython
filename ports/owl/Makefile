@@ -62,6 +62,9 @@ SRC_C = \
 	shared/readline/readline.c \
 	shared/runtime/stdout_helpers.c
 
+SRC_MOD += owlmodule.c
+SRC_MOD_CXX += owl.cpp
+
 ifeq ($(CROSS), 1)
   SRC_C += shared/runtime/gchelper_native.c
   OBJ += $(BUILD)/shared/runtime/gchelper_m3.o

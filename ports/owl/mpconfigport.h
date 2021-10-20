@@ -16,6 +16,7 @@
 #define MICROPY_MODULE_FROZEN_MPY         (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (0)
 #define MICROPY_PY_MATH                   (1)
+#define MICROPY_PY_SYS_EXIT               (0)
 
 #define MICROPY_ERROR_REPORTING           (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_FLOAT)
@@ -38,10 +39,10 @@
 #define MICROPY_PY_STRUCT                       (0)
 
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
-#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
-// Fall back to setjmp() implementation for discovery of GC pointers in registers.
-#define MICROPY_GCREGS_SETJMP (1)
-#endif
+/* #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__)) */
+/* // Fall back to setjmp() implementation for discovery of GC pointers in registers. */
+/* #define MICROPY_GCREGS_SETJMP (1) */
+/* #endif */
 
 // type definitions for the specific machine
 
