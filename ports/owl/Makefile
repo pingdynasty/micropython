@@ -1,0 +1,124 @@
+include ../../py/mkenv.mk
+
+CROSS ?= 0
+
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS = qstrdefsport.h
+
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
+# include py core make definitions
+include $(TOP)/py/py.mk
+
+ifeq ($(CROSS), 1)
+CROSS_COMPILE ?= arm-none-eabi-
+endif
+
+INC += -I.
+INC += -I$(TOP)
+INC += -I$(BUILD)
+
+ifeq ($(CROSS), 1)
+DFU = $(TOP)/tools/dfu.py
+PYDFU = $(TOP)/tools/pydfu.py
+# CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion
+CFLAGS_CORTEX_M4 = -fsingle-precision-constant -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
+LIBTARGET = libmicropython-cm4.a
+else
+# LD = gcc
+CFLAGS = -m32 $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+# CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+# LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+LIBTARGET = libmicropython-i386.a
+endif
+
+CSUPEROPT = -Os # save some code space
+
+# Tune for Debugging or Optimization
+ifeq ($(DEBUG), 1)
+CFLAGS += -O0 -ggdb
+else
+CFLAGS += -Os -DNDEBUG
+CFLAGS += -fdata-sections -ffunction-sections
+endif
+
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
+CXXFLAGS += $(CXXFLAGS_MOD)
+
+# Flags for user C modules
+CFLAGS += $(CFLAGS_MOD)
+LDFLAGS += $(LDFLAGS_MOD)
+
+LIBS =
+
+SRC_C = \
+	main.c \
+	shared/libc/printf.c \
+	shared/readline/readline.c \
+	shared/runtime/stdout_helpers.c
+
+ifeq ($(CROSS), 1)
+  SRC_C += shared/runtime/gchelper_native.c
+  OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
+else
+  SRC_C += shared/runtime/gchelper_generic.c
+  CFLAGS += -DMICROPY_GCREGS_SETJMP
+endif
+
+# ifeq ($(CROSS), 1)
+# SRC_C += shared/libc/string0.c
+# endif
+
+SRC_C += $(SRC_MOD)
+
+SRC_CXX += $(SRC_MOD_CXX)
+
+SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
+
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(PY_CORE_O)
+
+all: staticlib
+
+$(BUILD)/_frozen_mpy.c: $(BUILD)/genhdr/qstrdefs.generated.h
+	$(ECHO) "MISC freezing bytecode"
+	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
+
+$(BUILD)/firmware.elf: $(OBJ)
+	$(ECHO) "LINK $@"
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
+
+staticlib: $(OBJ)
+	$(Q)$(AR) rcs $(BUILD)/$(LIBTARGET) $(OBJ)
+
+deploy: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(PYTHON) $(PYDFU) -u $<
+
+# Run emulation build on a POSIX system with suitable terminal settings
+run:
+	stty raw opost -echo
+	build/firmware.elf
+	@echo Resetting terminal...
+# This sleep is useful to spot segfaults
+	sleep 1
+	reset
+
+test: $(BUILD)/firmware.elf
+	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
+
+include $(TOP)/py/mkrules.mk
