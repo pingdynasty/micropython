@@ -14,7 +14,7 @@
 #ifdef ARM_CORTEX
 #define MICROPY_ENABLE_GC                 (1)
 #else
-#define MICROPY_ENABLE_GC                 (0)
+#define MICROPY_ENABLE_GC                 (1)
 #endif
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_MODULE_FROZEN_MPY         (0)
