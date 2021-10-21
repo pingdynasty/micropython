@@ -11,7 +11,11 @@
 #define MICROPY_ENABLE_COMPILER     (1)
 
 /* #define MICROPY_QSTR_EXTRA_POOL           mp_qstr_frozen_const_pool */
+#ifdef ARM_CORTEX
 #define MICROPY_ENABLE_GC                 (1)
+#else
+#define MICROPY_ENABLE_GC                 (0)
+#endif
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_MODULE_FROZEN_MPY         (0)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (0)
@@ -38,7 +42,7 @@
 #define MICROPY_PY_IO                           (0)
 #define MICROPY_PY_STRUCT                       (0)
 
-#define MICROPY_PY_GC_COLLECT_RETVAL (1)
+/* #define MICROPY_PY_GC_COLLECT_RETVAL (1) */
 /* #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__)) */
 /* // Fall back to setjmp() implementation for discovery of GC pointers in registers. */
 /* #define MICROPY_GCREGS_SETJMP (1) */

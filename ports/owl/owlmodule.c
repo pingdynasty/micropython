@@ -6,6 +6,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(getButton_obj, getButton);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(getParameter_obj, getParameter);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(setButton_obj, setButton);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(setParameter_obj, setParameter);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(setOutput_obj, setOutput);
 
 // Define all properties of the module.
 // Table entries are key/value pairs of the attribute name (a string)
@@ -18,6 +19,7 @@ STATIC const mp_rom_map_elem_t owl_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getParameter), MP_ROM_PTR(&getParameter_obj) },
     { MP_ROM_QSTR(MP_QSTR_setButton), MP_ROM_PTR(&setButton_obj) },
     { MP_ROM_QSTR(MP_QSTR_setParameter), MP_ROM_PTR(&setParameter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setOutput), MP_ROM_PTR(&setOutput_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(owl_module_globals, owl_module_globals_table);
 

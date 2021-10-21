@@ -23,7 +23,7 @@ ifeq ($(CROSS), 1)
 DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
 # CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion
-CFLAGS_CORTEX_M4 = -fsingle-precision-constant -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS_CORTEX_M4 = -fsingle-precision-constant -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -DARM_CORTEX
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 LIBTARGET = libmicropython-cm4.a
