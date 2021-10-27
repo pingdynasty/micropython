@@ -16,11 +16,17 @@
 #else
 #define MICROPY_ENABLE_GC                 (1)
 #endif
-#define MICROPY_HELPER_REPL               (1)
+/* #define MICROPY_ENABLE_FINALISER    (1) */
+/* #define MICROPY_STACK_CHECK         (1) */
+#define MICROPY_HELPER_REPL               (0)
 #define MICROPY_MODULE_FROZEN_MPY         (0)
-#define MICROPY_ENABLE_EXTERNAL_IMPORT    (0)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 #define MICROPY_PY_MATH                   (1)
 #define MICROPY_PY_SYS_EXIT               (0)
+
+#define MICROPY_MODULE_BUILTIN_INIT (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 
 #define MICROPY_ERROR_REPORTING           (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_IMPL                (MICROPY_FLOAT_IMPL_FLOAT)
@@ -28,19 +34,31 @@
 #define MICROPY_ALLOC_PATH_MAX            (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
-#define MICROPY_COMP_CONST_FOLDING        (1)
-#define MICROPY_COMP_CONST_LITERAL        (1)
-#define MICROPY_FULL_CHECKS               (1)
-#define MICROPY_MULTIPLE_INHERITANCE      (1)
-#define MICROPY_PY_GENERATOR_PEND_THROW   (1)
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS   (1)
+/* #define MICROPY_COMP_CONST_FOLDING        (1) */
+/* #define MICROPY_COMP_CONST_LITERAL        (1) */
+/* #define MICROPY_FULL_CHECKS               (1) */
+/* #define MICROPY_MULTIPLE_INHERITANCE      (1) */
+/* #define MICROPY_PY_GENERATOR_PEND_THROW   (1) */
+/* #define MICROPY_PY_BUILTINS_RANGE_ATTRS   (1) */
 
 #define MICROPY_PY_ASYNC_AWAIT                  (0)
-#define MICROPY_PY_BUILTINS_SET                 (0)
-#define MICROPY_PY_ATTRTUPLE                    (0)
-#define MICROPY_PY_COLLECTIONS                  (0)
+#define MICROPY_PY_BUILTINS_SET                 (1)
+#define MICROPY_PY_ATTRTUPLE                    (1)
+#define MICROPY_PY_COLLECTIONS                  (1)
 #define MICROPY_PY_IO                           (0)
 #define MICROPY_PY_STRUCT                       (0)
+/* #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1) */
+/* #define MICROPY_PY_COLLECTIONS_DEQUE (1) */
+/* #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1) */
+/* #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1) */
+/* #define MICROPY_PY_MATH_ISCLOSE     (1) */
+/* #define MICROPY_PY_MATH_FACTORIAL   (1) */
+/* #define MICROPY_PY_CMATH            (1) */
+
+#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+#define MICROPY_PY_BUILTINS_SLICE (1)
+/* #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1) */
+/* #define MICROPY_PY_BUILTINS_SLICE_INDICES (1) */
 
 /* #define MICROPY_PY_GC_COLLECT_RETVAL (1) */
 /* #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__)) */
