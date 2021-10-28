@@ -23,18 +23,22 @@ ifeq ($(CROSS), 1)
 DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
 # CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion
-CFLAGS_CORTEX_M4 = -fsingle-precision-constant -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -DARM_CORTEX
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+CFLAGS_CORTEX_M4 = -fsingle-precision-constant -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -DARM_CORTEX -DARM_MATH_CM4 -D__FPU_PRESENT
+CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 LIBTARGET = libmicropython-cm4.a
 else
 # LD = gcc
-CFLAGS = -m32 $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+CFLAGS = -m32 $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu11 $(COPT)
+CFLAGS +=  -fsingle-precision-constant
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 # CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 # LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 LIBTARGET = libmicropython-i386.a
 endif
+
+
+# CFLAGS += -DULAB_CONFIG_FILE=ulab.h
 
 CSUPEROPT = -Os # save some code space
 
@@ -47,12 +51,15 @@ CFLAGS += -fdata-sections -ffunction-sections
 endif
 
 # Flags for optional C++ source code
-CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
+CXXFLAGS += $(filter-out -std=gnu11,$(CFLAGS))
 CXXFLAGS += $(CXXFLAGS_MOD)
+CXXFLAGS += -std=gnu++17
 
 # Flags for user C modules
 CFLAGS += $(CFLAGS_MOD)
 LDFLAGS += $(LDFLAGS_MOD)
+CFLAGS += $(CFLAGS_EXTRA)
+CXXFLAGS += $(CXXFLAGS_MOD)
 
 LIBS =
 
