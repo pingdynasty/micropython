@@ -37,6 +37,20 @@ LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 LIBTARGET = libmicropython-i386.a
 endif
 
+CPPFLAGS += -fpic
+CPPFLAGS += -fpie
+# CPPFLAGS += -fno-plt
+CPPFLAGS += -fdata-sections
+CPPFLAGS += -ffunction-sections
+# CPPFLAGS += -mno-unaligned-access
+CPPFLAGS += -fno-omit-frame-pointer
+# CPPFLAGS += -flto
+CFLAGS += $(CPPFLAGS)
+CXXFLAGS += $(CPPFLAGS)
+
+LDFLAGS += -fpic
+LDFLAGS += -fpie
+# LDFLAGS += -flto
 
 # CFLAGS += -DULAB_CONFIG_FILE=ulab.h
 
@@ -47,13 +61,14 @@ ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
 else
 CFLAGS += -Os -DNDEBUG
-CFLAGS += -fdata-sections -ffunction-sections
+# CFLAGS += -fdata-sections -ffunction-sections
 endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=gnu11,$(CFLAGS))
 CXXFLAGS += $(CXXFLAGS_MOD)
 CXXFLAGS += -std=gnu++17
+CXXFLAGS += -fno-rtti -fno-exceptions
 
 # Flags for user C modules
 CFLAGS += $(CFLAGS_MOD)

@@ -8,11 +8,9 @@
 // Include MicroPython API.
 #include "py/runtime.h"
 
-   extern mp_obj_t owl_getButton(mp_obj_t a_obj);
-   extern mp_obj_t owl_getParameter(mp_obj_t a_obj);
-   extern mp_obj_t owl_setButton(mp_obj_t a_obj, mp_obj_t b_obj);
-   extern mp_obj_t owl_setParameter(mp_obj_t a_obj, mp_obj_t b_obj);
-   extern mp_obj_t owl_setOutput(mp_obj_t a_obj, mp_obj_t b_obj); // value can be bool, int, float or iterator
+   extern mp_obj_t owl_button(size_t n_args, const mp_obj_t *args); // get or set button value
+   extern mp_obj_t owl_parameter(size_t n_args, const mp_obj_t *args); // get or set parameter value
+   extern mp_obj_t owl_output(mp_obj_t a_obj, mp_obj_t b_obj); // value can be bool, int, float or iterator
 
    extern mp_obj_t owl_print(mp_obj_t a_obj, mp_obj_t b_obj, mp_obj_t c_obj);
    extern mp_obj_t owl_draw(size_t n_args, const mp_obj_t *args);
