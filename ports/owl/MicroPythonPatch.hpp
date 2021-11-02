@@ -2,13 +2,11 @@
 #define __MicroPythonPatch_hpp__
 
 /**
-   cd micropython/ports/owl
-   make CROSS=1 clean all
-   cp build/libmicropython-cm4.a ~/devel/OwlProgram/MyPatches/
-   make CROSS=0 clean all
-   cp build/libmicropython-i386.a ~/devel/OwlProgram/MyPatches/
+ * build build/libmicropython-cm4.a:
+ * make CROSS=1 clean all
+ * build build/libmicropython-i386.a:
+ * make CROSS=0 clean all
  */
-
 #define USE_MP_SCREEN
 #ifdef USE_MP_SCREEN
 #include "MonochromeScreenPatch.h"
@@ -18,10 +16,8 @@
 #include "ServiceCall.h"
 #include "message.h"
 
-// #define NO_QSTR
-
-// #define HEAPSIZE (6*1024*1024)
-#define HEAPSIZE (256*1024)
+#define HEAPSIZE (6*1024*1024)
+// #define HEAPSIZE (256*1024)
 
 extern "C" {
 
