@@ -78,10 +78,21 @@ extern "C" {
     return mp_const_none;    
   }
 
-  mp_obj_t owl_print(mp_obj_t a_obj, mp_obj_t b_obj, mp_obj_t c_obj){
-    int x = mp_obj_get_int(a_obj);
-    int y = mp_obj_get_int(b_obj);
-    const char* text = mp_obj_str_get_str(c_obj);
+  /**
+   * invoked as one of:
+   * print(x, y, str)
+   * print(y, str)
+   * print(str)
+   */  
+  mp_obj_t owl_print(size_t n_args, const mp_obj_t *args){
+    int x = 0;
+    int y = 0;
+    size_t pos = 0;
+    if(n_args > 2)
+      y = mp_obj_get_int(args[pos++]);
+    if(n_args > 1)
+      x = mp_obj_get_int(args[pos++]);
+    const char* text = mp_obj_str_get_str(args[pos++]);
     doScreenPrint(x, y, text);
     return mp_const_none;    
   }
