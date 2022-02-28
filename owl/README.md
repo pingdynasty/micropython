@@ -39,11 +39,13 @@ def saw():
   ph += (2 * freq) / 48000
   if ph >= 1:
    ph -= 2
-owl.output(0, saw())
+owl.output(0, saw()) # assign iterator to first output channel
 ```
 In this example, the freq and gain variables can be changed on-the-fly from the REPL.
 
-Or you can create an iterator over an array:
+Also compiled in is [math](https://docs.circuitpython.org/en/latest/shared-bindings/math/index.html) and [ulab](https://docs.circuitpython.org/en/latest/shared-bindings/ulab/).
+
+Output audio using an iterator over an array:
 ```
 def cycle(p):
     try:
@@ -62,7 +64,7 @@ a = [math.sin(2 * math.pi * x / len) for x in range(0, len)]
 owl.output(0, cycle(a))
 ```
 
-Also compiled in is [math](https://docs.circuitpython.org/en/latest/shared-bindings/math/index.html) and [ulab](https://docs.circuitpython.org/en/latest/shared-bindings/ulab/).
+or, using `ulab`:
 ```
 from ulab import numpy as np
 a = np.array(range(1000))/1000 - 1
