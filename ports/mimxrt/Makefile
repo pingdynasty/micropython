@@ -13,15 +13,22 @@ endif
 include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
-# Set optional flash configuration variables
-BOARD_FLASH_RESERVED ?=
+LD_MEMORY_CONFIG_DEFINES += \
+	MICROPY_HW_FLASH_TYPE=$(MICROPY_HW_FLASH_TYPE) \
+	MICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE)
+
+ifdef MICROPY_HW_FLASH_RESERVED
+LD_MEMORY_CONFIG_DEFINES += MICROPY_HW_FLASH_RESERVED=$(MICROPY_HW_FLASH_RESERVED)
+endif
+
+ifdef MICROPY_HW_SDRAM_AVAIL
+CFLAGS += \
+	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
+	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE)
 
 LD_MEMORY_CONFIG_DEFINES += \
-	BOARD_FLASH_TYPE=$(BOARD_FLASH_TYPE) \
-	BOARD_FLASH_SIZE=$(BOARD_FLASH_SIZE)
-
-ifdef $(BOARD_FLASH_RESERVED)
-LD_MEMORY_CONFIG_DEFINES += BOARD_FLASH_RESERVED=$(BOARD_FLASH_RESERVED)
+	MICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
+	MICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE)
 endif
 
 # Qstr definitions (must come before including py.mk)
@@ -36,7 +43,7 @@ MICROPY_VFS_FAT ?= 1
 # Include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/tinyusb lib/nxp_driver
+GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
 LD_FILES = boards/$(MCU_SERIES).ld boards/common.ld
@@ -72,7 +79,7 @@ INC += -I$(TOP)/lib/tinyusb/src
 
 CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
-CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT)
+CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT) -DBOARD_$(BOARD)
 CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
 	-DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
@@ -81,14 +88,8 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
-	-DBOARD_FLASH_SIZE=$(BOARD_FLASH_SIZE) \
-	-DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_nor_config.h\"
-
-ifeq ($(BOARD_FLASH_TYPE), qspi_nor)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
-else ifeq ($(BOARD_FLASH_TYPE), hyperflash)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
-endif
+	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
+	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
@@ -117,13 +118,42 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -Og -ggdb
 LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
+endif
+
+# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
+ifeq ($(MICROPY_PY_LWIP), 1)
+
+INC += -Ilwip_inc
+INC += -Ihal/phy
+
+SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
+
+SRC_ETH_C += \
+	hal/phy/mdio/enet/fsl_enet_mdio.c \
+	hal/phy/device/phydp83825/fsl_phydp83825.c \
+	hal/phy/device/phydp83848/fsl_phydp83848.c \
+	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
+	hal/phy/device/phylan8720/fsl_phylan8720.c \
+	lib/mbedtls_errors/mp_mbedtls_errors.c \
+	$(MCU_DIR)/drivers/fsl_enet.c \
+
+SRC_QSTR += \
+	extmod/modlwip.c \
+	extmod/modnetwork.c \
+	extmod/moduwebsocket.c \
+	extmod/modusocket.c \
+	network_lan.c \
+
+CFLAGS += -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
+	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+
 endif
 
 # TinyUSB Stack source
@@ -156,23 +186,41 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
+	$(MCU_DIR)/drivers/fsl_ocotp.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
+	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
+	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
+ifeq ($(MICROPY_HW_SDRAM_AVAIL), 1)
+SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
+endif
+
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064))
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/fsl_qtmr.c
 endif
 
 SRC_C += \
 	board_init.c \
 	dma_channel.c \
 	drivers/bus/softspi.c \
+	drivers/dht/dht.c \
+	eth.c \
+	extmod/modnetwork.c \
 	extmod/modonewire.c \
+	extmod/modusocket.c \
+	extmod/uos_dupterm.c \
 	fatfs_port.c \
+	hal/pwm_backport.c \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \
@@ -184,17 +232,26 @@ SRC_C += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_wdt.c \
 	main.c \
+	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
+	mimxrt_sdram.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
 	modutime.c \
 	mphalport.c \
+	mpnetworkport.c \
+	network_lan.c \
+	pendsv.c \
 	pin.c \
 	sdcard.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
+	shared/netutils/netutils.c \
+	shared/netutils/trace.c \
+	shared/netutils/dhcpserver.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_native.c \
 	shared/runtime/mpirq.c \
@@ -202,21 +259,39 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
+	systick.c \
 	ticks.c \
 	tusb_port.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_HAL_IMX_C) \
+	$(SRC_ETH_C) \
 
-ifeq ($(BOARD_FLASH_TYPE), qspi_nor)
-SRC_C += \
-	hal/flexspi_nor_flash.c \
-	$(BOARD_DIR)/qspi_nor_flash_config.c
-else ifeq ($(BOARD_FLASH_TYPE), hyperflash)
-SRC_C += \
-	hal/flexspi_hyper_flash.c \
-	$(BOARD_DIR)/qspi_hyper_flash_config.c
+ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
+SRC_C += hal/flexspi_nor_flash.c
+
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+SRC_C += $(BOARD_DIR)/qspi_nor_flash_config.c
 else
-$(error Error: Unknown board flash type $(BOARD_FLASH_TYPE))
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
+SRC_C += hal/qspi_nor_flash_config.c
+endif
+#
+else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
+SRC_C += hal/flexspi_hyper_flash.c
+
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+SRC_C += $(BOARD_DIR)/qspi_hyper_flash_config.c
+else
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
+SRC_C += hal/qspi_hyper_flash_config.c
+endif
+#
+else
+$(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -321,14 +396,17 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # List of sources for qstr extraction
 SRC_QSTR += \
 	extmod/modonewire.c \
+	extmod/uos_dupterm.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_pwm.c \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_wdt.c \
 	mimxrt_flash.c \
 	modmachine.c \
 	modmimxrt.c \
