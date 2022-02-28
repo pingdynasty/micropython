@@ -80,19 +80,20 @@ extern "C" {
 
   /**
    * invoked as one of:
-   * print(x, y, str)
-   * print(y, str)
+   * print(str, x, y)
+   * print(str, y)
    * print(str)
    */  
   mp_obj_t owl_print(size_t n_args, const mp_obj_t *args){
     int x = 0;
     int y = 0;
-    size_t pos = 0;
-    if(n_args > 2)
-      y = mp_obj_get_int(args[pos++]);
-    if(n_args > 1)
-      x = mp_obj_get_int(args[pos++]);
-    const char* text = mp_obj_str_get_str(args[pos++]);
+    const char* text = mp_obj_str_get_str(args[0]);
+    if(n_args > 2){
+      x = mp_obj_get_int(args[1]);
+      y = mp_obj_get_int(args[2]);
+    }else if(n_args > 1){
+      y = mp_obj_get_int(args[1]);
+    }
     doScreenPrint(x, y, text);
     return mp_const_none;    
   }

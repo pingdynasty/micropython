@@ -11,8 +11,8 @@ There's an `owl` package available that provides access to (some) hardware funct
 Current draft interface:
 ```
 import owl
-owl.print(x, y, text)
-owl.print(y, text)
+owl.print(text, x, y)
+owl.print(text, y)
 owl.print(text)
 owl.parameter(id) # get parameter value
 owl.parameter(id, value) # set parameter value (number or boolean)
