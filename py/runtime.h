@@ -26,7 +26,6 @@
 #ifndef MICROPY_INCLUDED_PY_RUNTIME_H
 #define MICROPY_INCLUDED_PY_RUNTIME_H
 
-#include "basicmaths.h"
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
