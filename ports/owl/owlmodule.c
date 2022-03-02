@@ -20,7 +20,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(clear_obj, owl_clear);
 /* setattr(owl, 'SR', 48000) */
 /* setattr(owl, 'BS', 64) */
 /* setattr(owl, 'BR', 48000/64) */
-   
+
 // Define all properties of the module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.

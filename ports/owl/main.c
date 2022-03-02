@@ -31,20 +31,20 @@ int main(int argc, char **argv) {
 #if MICROPY_ENABLE_GC
 // Do a garbage collection cycle.
 void gc_collect(void) {
-  gc_collect_start();
-  gc_helper_collect_regs_and_stack();
-  gc_collect_end();
+    gc_collect_start();
+    gc_helper_collect_regs_and_stack();
+    gc_collect_end();
 }
 #endif
 
 // There is no filesystem so stat'ing returns nothing.
 mp_import_stat_t mp_import_stat(const char *path) {
-  return MP_IMPORT_STAT_NO_EXIST;
+    return MP_IMPORT_STAT_NO_EXIST;
 }
 
 // There is no filesystem so opening a file raises an exception.
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-  mp_raise_OSError(MP_ENOENT);
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kwargs) {
