@@ -14,16 +14,19 @@ import owl
 owl.print(text, x, y)
 owl.print(text, y)
 owl.print(text)
+owl.plot(x, y) # set pixel
+owl.plot(x, y, colour) # set pixel to colour (0 or 1 for monochrome screens)
 owl.parameter(id) # get parameter value
 owl.parameter(id, value) # set parameter value (number or boolean)
 owl.parameter(id, iterator) # set parameter with iterator (at block rate)
 owl.button(id) # get button value
 owl.button(id, value) # set button value (number or boolean)
+owl.input(ch); // get sample value
 owl.output(ch, value) # set DC audio output value
 owl.output(ch, iterator) # set audio output with iterator (at audio rate)
-owl.sr # sample rate constant
-owl.br # block rate constant
-owl.bs # block size constant
+owl.SR # sample rate constant
+owl.BR # block rate constant
+owl.BS # block size constant
 ```
 
 ## Examples
@@ -80,5 +83,83 @@ Install with:
 ```
 cp build/libmicropython-*.a Somewhere/OwlProgram/Libraries/
 ```
-Then build MicroPythonPatch.
+Then build MicroPythonPatch, e.g. with:
 
+```
+make PATCHSOURCE=SomeWhere/micropython/owl PATCHNAME=MicroPython clean
+```
+
+## Examples
+
+### Sawtooth Oscillator
+
+```
+freq = 440
+gain = 0.5
+def saw():
+ ph = 0
+ while True:
+  yield ph*gain
+  ph += (2 * freq) / 48000
+  if ph >= 1:
+   ph -= 2
+owl.output(0, saw())
+```
+
+### Table Oscillator
+
+```
+def cycle(p):
+    try:
+        len(p)
+    except TypeError:
+        cache = []
+        for i in p:
+            yield i
+            cache.append(i)
+        p = cache
+    while p:
+        yield from p
+freq = 440
+len = int(48000/freq) # length of a single cycle
+a = [math.sin(2 * math.pi * x / len) for x in range(0, len)]
+owl.output(0, cycle(a))
+```
+
+Using ulab to create a sawtooth oscillator:
+
+```
+from ulab import numpy as np
+
+a = np.array(range(1000))/1000 - 1
+owl.output(0, cycle(a))
+```
+
+### Audio Gain Control
+
+```
+def attenuator(ch, gain):
+ while True:
+  yield owl.input(ch)*gain
+
+owl.output(0, attenuator(0, 0.5))
+```
+
+### Screen
+
+```
+owl.clear()
+for i in range(0, 60, 6):
+  owl.print("yo", i*2, i+8)
+```
+
+```
+import random
+owl.clear()
+owl.draw(10, 10, 118, 10)
+owl.draw(10, 60, 118, 60)
+owl.draw(10, 10, 10, 60)
+owl.draw(118, 10, 118, 60)
+for i in range(1000):
+  owl.plot(random.randint(10, 118), random.randint(10, 60))
+```

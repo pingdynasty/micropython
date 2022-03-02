@@ -219,18 +219,40 @@ AbstractIterator* createIterator(mp_obj_t iterator_obj){
   // return NULL;
 }
 
+class SampleIterator {
+protected:
+  FloatArray samples;
+  size_t index = 0;
+public:
+  void setSamples(FloatArray s){
+    samples = s;
+    index = 0;
+  }
+  float next(){
+    float sample = 0;
+    if(index < samples.getSize())
+      sample = samples[index++];
+    return sample;
+  }
+};
 
 #define MP_NOF_CHANNELS 2
 #define MP_NOF_PARAMETERS 8
 
 static AbstractIterator* outputs[MP_NOF_CHANNELS] = {};
 static AbstractIterator* parameters[MP_NOF_PARAMETERS] = {};
+static SampleIterator inputs[MP_NOF_CHANNELS];
 
 #ifdef USE_MP_SCREEN
 static MonochromeScreenBuffer* mp_screen = NULL;
 #endif
 
 extern "C" {
+  float doGetSample(int ch){
+    if(ch < MP_NOF_CHANNELS)
+      return inputs[ch].next();
+    return 0;
+  }
   void doSetOutputIterator(uint8_t ch, mp_obj_t iterator){
     if(ch < MP_NOF_CHANNELS)
       outputs[ch] = createIterator(iterator);
@@ -243,6 +265,12 @@ extern "C" {
 #ifdef USE_MP_SCREEN
     if(mp_screen != NULL)
       mp_screen->print(x, y, text);
+#endif
+  }
+  void doScreenPlot(int x, int y, int c){
+#ifdef USE_MP_SCREEN
+    if(mp_screen != NULL)
+      mp_screen->setPixel(x, y, c);
 #endif
   }
   void doScreenDraw(int x0, int y0, int x1, int y1, int c){
@@ -366,10 +394,11 @@ public:
       if(parameters[pid] != NULL)
 	setParameterValue((PatchParameterId)pid, parameters[pid]->next());
     }
-    buffer.clear();
     for(size_t ch=0; ch<MP_NOF_CHANNELS; ++ch){
+      FloatArray samples = buffer.getSamples(ch);
+      inputs[ch].setSamples(samples);
       if(outputs[ch] != NULL)
-	outputs[ch]->fill(buffer.getSamples(ch));
+	outputs[ch]->fill(samples);
     }
   }
 

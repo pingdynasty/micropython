@@ -103,10 +103,15 @@ SRC_C += $(SRC_MOD)
 
 SRC_CXX += $(SRC_MOD_CXX)
 
-SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
+SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX) $(EXTMOD_SRC_C)
+
+EXTMOD_SRC_C += $(addprefix extmod/,\
+	modurandom.c \
+	)
 
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(PY_CORE_O)
 
 all: staticlib

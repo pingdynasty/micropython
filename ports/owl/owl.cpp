@@ -11,8 +11,10 @@ extern "C" {
   void doSetOutputIterator(uint8_t ch, mp_obj_t iterator);
   void doSetParameterIterator(uint8_t id, mp_obj_t iterator);
   void doScreenPrint(int x, int y, const char* text);
+  void doScreenPlot(int x, int y, int c);
   void doScreenDraw(int x0, int y0, int x1, int y1, int c);	      
   void doScreenClear();
+  float doGetSample(int ch);
 
   // implicit conversion of float to int
   int getInt(mp_obj_t arg){
@@ -72,9 +74,25 @@ extern "C" {
     }
   }
 
+  mp_obj_t owl_input(mp_obj_t a_obj) {
+    int ch = mp_obj_get_int(a_obj);
+    float sample = doGetSample(ch);
+    return mp_obj_new_float(sample);
+  }
+
   mp_obj_t owl_output(mp_obj_t a_obj, mp_obj_t b_obj) {
     int ch = mp_obj_get_int(a_obj);
     doSetOutputIterator(ch, b_obj);
+    return mp_const_none;    
+  }
+
+  extern mp_obj_t owl_plot(size_t n_args, const mp_obj_t *args){
+    int x = mp_obj_get_int(args[0]);
+    int y = mp_obj_get_int(args[1]);
+    int c = 1;
+    if(n_args > 2)
+      c = mp_obj_get_int(args[2]);
+    doScreenPlot(x, y, c);
     return mp_const_none;    
   }
 

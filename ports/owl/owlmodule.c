@@ -5,7 +5,9 @@
 // See example.cpp for the definition.
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(button_obj, 1, 2, owl_button);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(parameter_obj, 1, 2, owl_parameter);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(input_obj, owl_input);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(output_obj, owl_output);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(plot_obj, 2, 3, owl_plot);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(print_obj, 1, 3, owl_print);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(draw_obj, 2, 5, owl_draw);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(clear_obj, owl_clear);
@@ -15,9 +17,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(clear_obj, owl_clear);
 #define OWL_BLOCK_SIZE 64
 #define OWL_CHANNELS 2
 /* import owl */
-/* setattr(owl, 'sr', 48000) */
-/* setattr(owl, 'bs', 64) */
-/* setattr(owl, 'br', 48000/64) */
+/* setattr(owl, 'SR', 48000) */
+/* setattr(owl, 'BS', 64) */
+/* setattr(owl, 'BR', 48000/64) */
    
 // Define all properties of the module.
 // Table entries are key/value pairs of the attribute name (a string)
@@ -74,13 +76,15 @@ STATIC const mp_rom_map_elem_t owl_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DF), MP_ROM_INT(PARAMETER_DF) },
     { MP_ROM_QSTR(MP_QSTR_DG), MP_ROM_INT(PARAMETER_DG) },
     { MP_ROM_QSTR(MP_QSTR_DH), MP_ROM_INT(PARAMETER_DH) },
-    { MP_ROM_QSTR(MP_QSTR_sr), MP_ROM_INT(OWL_SAMPLE_RATE) },
-    { MP_ROM_QSTR(MP_QSTR_br), MP_ROM_INT(OWL_BLOCK_RATE) },
-    { MP_ROM_QSTR(MP_QSTR_bs), MP_ROM_INT(OWL_BLOCK_SIZE) },
+    { MP_ROM_QSTR(MP_QSTR_SR), MP_ROM_INT(OWL_SAMPLE_RATE) },
+    { MP_ROM_QSTR(MP_QSTR_BR), MP_ROM_INT(OWL_BLOCK_RATE) },
+    { MP_ROM_QSTR(MP_QSTR_BS), MP_ROM_INT(OWL_BLOCK_SIZE) },
     { MP_ROM_QSTR(MP_QSTR_ch), MP_ROM_INT(OWL_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_button), MP_ROM_PTR(&button_obj) },
     { MP_ROM_QSTR(MP_QSTR_parameter), MP_ROM_PTR(&parameter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_input), MP_ROM_PTR(&input_obj) },
     { MP_ROM_QSTR(MP_QSTR_output), MP_ROM_PTR(&output_obj) },
+    { MP_ROM_QSTR(MP_QSTR_plot), MP_ROM_PTR(&plot_obj) },
     { MP_ROM_QSTR(MP_QSTR_print), MP_ROM_PTR(&print_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&draw_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&clear_obj) },
