@@ -121,12 +121,12 @@ def cycle(p):
     while p:
         yield from p
 freq = 440
-len = int(48000/freq) # length of a single cycle
+len = int(owl.SR/freq) # length of a single cycle
 a = [math.sin(2 * math.pi * x / len) for x in range(0, len)]
 owl.output(0, cycle(a))
 ```
+Create a table containing a single cycle sine wave, then call `owl.output` with a generator that iterates over the table.
 
-Using ulab to create a sawtooth oscillator:
 
 ```
 from ulab import numpy as np
@@ -134,6 +134,7 @@ from ulab import numpy as np
 a = np.array(range(1000))/1000 - 1
 owl.output(0, cycle(a))
 ```
+Use ulab to create a sawtooth oscillator.
 
 ### Audio Gain Control
 
@@ -144,6 +145,7 @@ def attenuator(ch, gain):
 
 owl.output(0, attenuator(0, 0.5))
 ```
+Passes the audio signal from input channel 0 to output channel 0, with gain = 0.5.
 
 ### Screen
 
@@ -162,4 +164,20 @@ owl.draw(10, 10, 10, 60)
 owl.draw(118, 10, 118, 60)
 for i in range(1000):
   owl.plot(random.randint(10, 118), random.randint(10, 60))
+```
+
+```
+import random
+def triangular(lo, hi) :
+    a = random.random()
+    b = random.random()
+    w = (hi-lo)/2
+    return (1 + a - b) * w + lo
+owl.clear()
+owl.draw(10, 10, 118, 10)
+owl.draw(10, 60, 118, 60)
+owl.draw(10, 10, 10, 60)
+owl.draw(118, 10, 118, 60)
+for i in range(1000):
+  owl.plot(int(triangular(10, 118)), int(triangular(10, 60)))
 ```
