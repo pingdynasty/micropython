@@ -104,7 +104,7 @@ extern "C" {
    */  
   mp_obj_t owl_print(size_t n_args, const mp_obj_t *args){
     int x = 0;
-    int y = 0;
+    int y = 10;
     const char* text = mp_obj_str_get_str(args[0]);
     if(n_args > 2){
       x = mp_obj_get_int(args[1]);
